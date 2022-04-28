@@ -2,6 +2,17 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import Carousel from './Carousel';
 
+// Smoke
+test('It renders without crashing', () => {
+	render(<Carousel />);
+});
+
+// Snapshot
+it('matches snapshot', function() {
+	const { asFragment } = render(<Carousel title="Test Title" />);
+	expect(asFragment()).toMatchSnapshot();
+});
+
 it('works when you click on the right arrow', function() {
 	const { queryByTestId, queryByAltText } = render(<Carousel />);
 
@@ -35,13 +46,32 @@ it('works when you click on the left arrow', () => {
 	expect(queryByAltText('Photo by Pratik Patel on Unsplash')).not.toBeInTheDocument();
 });
 
-// Smoke
-test('It renders without crashing', () => {
-	render(<Carousel />);
-});
+it('hides left-arrow on first image and right-arrow on final image', () => {
+	const { queryByTestId, queryByAltText, debug } = render(<Carousel />);
+	let rightArrow = queryByTestId('right-arrow');
+	let leftArrow = queryByTestId('left-arrow');
 
-// Snapshot
-it('matches snapshot', function() {
-	const { asFragment } = render(<Carousel title="Test Title" />);
-	expect(asFragment()).toMatchSnapshot();
+	// Left arrow should be hidden
+	expect(rightArrow).toBeInTheDocument();
+	expect(leftArrow).not.toBeInTheDocument();
+
+	// next image
+	fireEvent.click(rightArrow);
+	// redifine arrows
+	leftArrow = queryByTestId('left-arrow');
+	rightArrow = queryByTestId('right-arrow');
+
+	expect(rightArrow).toBeInTheDocument();
+	expect(leftArrow).toBeInTheDocument();
+
+	// final image
+	fireEvent.click(rightArrow);
+
+	// redifine arrows again
+	leftArrow = queryByTestId('left-arrow');
+	rightArrow = queryByTestId('right-arrow');
+
+	// Right arrow should be hidden
+	expect(leftArrow).toBeInTheDocument();
+	expect(rightArrow).not.toBeInTheDocument();
 });
